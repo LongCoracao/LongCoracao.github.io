@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hint Box Designer</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0c10;
+    --panel:     #111318;
+    --border:    #2a2d38;
+    --accent:    #4af0c8;
+    --accent2:   #f0a84a;
+    --dim:       #3a3d4a;
+    --text:      #c8ccd8;
+    --text-dim:  #5a5e72;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── Header ─── */
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .logo-mark {
+    width: 32px; height: 32px;
+    border: 2px solid var(--accent); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Share Tech Mono', monospace; font-size: 13px;
+    color: var(--accent); text-shadow: 0 0 8px var(--accent); flex-shrink: 0;
+  }
+  header h1 { font-size: 18px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #fff; }
+  header h1 span { color: var(--accent); }
+  .header-sub { margin-left: auto; font-size: 12px; color: var(--text-dim); letter-spacing: 1px; font-family: 'Share Tech Mono', monospace; }
+
+  /* ─── Layout ─── */
+  .workspace {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr auto;
+  }
+
+  /* ─── Panels ─── */
+  .panel {
+    padding: 18px 20px;
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 11px;
+    overflow-y: auto;
+  }
+  .panel.preview-panel { border-right: none; background: #0d0f14; }
+  .panel-label {
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text-dim); font-family: 'Share Tech Mono', monospace;
+    display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0;
+  }
+  .panel-label::before {
+    content: ''; display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent);
+  }
+
+  /* ─── Toolbar ─── */
+  .toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
+  .toolbar-label { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; font-family: 'Share Tech Mono', monospace; flex-shrink: 0; }
+  .btn {
+    font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 600;
+    letter-spacing: 1px; cursor: pointer; border-radius: 4px;
+    border: 1px solid var(--dim); background: var(--panel);
+    color: var(--text); padding: 5px 12px; transition: all .15s; text-transform: uppercase;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 8px rgba(74,240,200,.15); }
+  .btn-accent { background: rgba(74,240,200,.08); border-color: var(--accent); color: var(--accent); }
+  .btn-accent:hover { background: rgba(74,240,200,.18); }
+  .btn-warn { border-color: #c0392b; color: #e74c3c; }
+  .btn-warn:hover { background: rgba(231,76,60,.12); border-color: #e74c3c; color: #ff6b6b; box-shadow: none; }
+
+  /* ─── Quick swatches ─── */
+  .color-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
+  .color-swatch {
+    width: 22px; height: 22px; border-radius: 4px;
+    border: 2px solid transparent; cursor: pointer;
+    transition: transform .15s, border-color .15s; flex-shrink: 0;
+  }
+  .color-swatch:hover { transform: scale(1.25); border-color: #fff; }
+
+  /* ─── Color Wheel Section ─── */
+  .wheel-section {
+    background: #0d0f14;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 14px 12px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    flex-shrink: 0;
+  }
+  .wheel-canvas-wrap {
+    position: relative;
+    flex-shrink: 0;
+    width: 150px;
+    height: 150px;
+  }
+  #wheelCanvas {
+    display: block;
+    cursor: crosshair;
+  }
+  #svCanvas {
+    position: absolute;
+    cursor: crosshair;
+    border-radius: 3px;
+  }
+  .wheel-controls {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+  }
+  .wheel-preview-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .wheel-preview-swatch {
+    width: 40px; height: 40px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    transition: background .08s;
+  }
+  .wheel-hex-display {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px;
+    color: #fff;
+    letter-spacing: 2px;
+    cursor: pointer;
+    user-select: all;
+  }
+  .wheel-hex-display .caret { color: var(--accent); }
+
+  /* Sliders */
+  .slider-row { display: flex; flex-direction: column; gap: 3px; }
+  .slider-row label { font-size: 10px; letter-spacing: 2px; color: var(--text-dim); font-family: 'Share Tech Mono', monospace; }
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%; height: 8px; border-radius: 4px;
+    outline: none; cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px; height: 15px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--accent);
+    box-shadow: 0 0 5px rgba(74,240,200,.5);
+    cursor: pointer;
+  }
+  #hueSlider { background: linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00); }
+
+  .rgb-row { display: flex; gap: 6px; }
+  .rgb-field {
+    flex: 1; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 4px; padding: 3px 5px;
+    font-family: 'Share Tech Mono', monospace; font-size: 11px;
+    color: var(--text); text-align: center;
+  }
+  .rgb-field .ch { display: block; font-size: 9px; color: var(--text-dim); opacity: .6; }
+
+  .wheel-insert-btn {
+    font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
+    border-radius: 5px; border: 1px solid var(--accent);
+    background: rgba(74,240,200,.1); color: var(--accent);
+    padding: 7px 0; width: 100%;
+    transition: all .15s;
+  }
+  .wheel-insert-btn:hover { background: rgba(74,240,200,.22); box-shadow: 0 0 12px rgba(74,240,200,.2); }
+
+  /* ─── Code Input ─── */
+  .editor-area { flex: 1; min-height: 120px; }
+  textarea {
+    width: 100%; height: 100%; min-height: 120px;
+    background: #0d0f14; border: 1px solid var(--border); border-radius: 6px;
+    color: #c8ccd8; font-family: 'Share Tech Mono', monospace;
+    font-size: 13px; line-height: 1.7; padding: 14px;
+    resize: none; outline: none; transition: border-color .2s;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--dim); }
+
+  /* ─── Preview ─── */
+  .preview-stage {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    background:
+      repeating-linear-gradient(0deg,   transparent, transparent 30px, rgba(255,255,255,.02) 30px, rgba(255,255,255,.02) 31px),
+      repeating-linear-gradient(90deg,  transparent, transparent 30px, rgba(255,255,255,.02) 30px, rgba(255,255,255,.02) 31px);
+    border: 1px solid var(--border); border-radius: 6px;
+    min-height: 140px; padding: 30px; position: relative;
+  }
+  .stage-label {
+    position: absolute; top: 8px; left: 12px;
+    font-size: 10px; color: var(--text-dim); letter-spacing: 2px; font-family: 'Share Tech Mono', monospace;
+  }
+  .hint-box {
+    background: #000; border: 1px solid #333;
+    padding: 8px 14px 10px; min-width: 160px; max-width: 340px;
+    font-family: 'Malgun Gothic Semilight', 'Malgun Gothic', 'Consolas', 'Lucida Console', monospace; font-size: 13px;
+    line-height: 1; color: #fff;
+    box-shadow: 2px 2px 0 #000, 0 0 0 1px #444;
+    white-space: pre-wrap;
+  }
+  .hint-box .hint-line { display: block; }
+
+  /* ─── Bottom Bar ─── */
+  .bottom-bar {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 12px;
+    padding: 12px 20px; background: var(--panel); border-top: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .raw-output {
+    flex: 1; background: #0d0f14; border: 1px solid var(--border);
+    border-radius: 4px; padding: 8px 12px;
+    font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--accent2);
+    overflow-x: auto; white-space: pre; letter-spacing: .5px; user-select: all; cursor: pointer;
+  }
+  .copy-status { font-size: 12px; font-family: 'Share Tech Mono', monospace; color: var(--accent); opacity: 0; transition: opacity .3s; }
+  .copy-status.show { opacity: 1; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 3px; }
+
+  @media (max-width: 720px) {
+    .workspace { grid-template-columns: 1fr; }
+    .panel { border-right: none; border-bottom: 1px solid var(--border); }
+    .wheel-section { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">HB</div>
+  <h1>Hint Box <span>Designer</span></h1>
+  <div class="header-sub">^RRGGBB · \r syntax</div>
+</header>
+
+<div class="workspace">
+
+  <!-- ── LEFT: Editor ── -->
+  <div class="panel">
+    <div class="panel-label">Code Input</div>
+
+    <!-- Quick swatches -->
+    <div class="color-row">
+      <span class="toolbar-label">Presets:</span>
+      <div class="color-swatch" style="background:#f1c40f" data-hex="f1c40f" title="Gold"></div>
+      <div class="color-swatch" style="background:#e74c3c" data-hex="e74c3c" title="Red"></div>
+      <div class="color-swatch" style="background:#2af10f" data-hex="2af10f" title="Green"></div>
+      <div class="color-swatch" style="background:#3498db" data-hex="3498db" title="Blue"></div>
+      <div class="color-swatch" style="background:#9b59b6" data-hex="9b59b6" title="Purple"></div>
+      <div class="color-swatch" style="background:#1abc9c" data-hex="1abc9c" title="Teal"></div>
+      <div class="color-swatch" style="background:#e67e22" data-hex="e67e22" title="Orange"></div>
+      <div class="color-swatch" style="background:#ffffff" data-hex="ffffff" title="White"></div>
+    </div>
+
+    <!-- ══ Color Wheel ══ -->
+    <div class="wheel-section">
+      <!-- Hue ring + SV square -->
+      <div class="wheel-canvas-wrap">
+        <canvas id="wheelCanvas" width="150" height="150"></canvas>
+        <canvas id="svCanvas"    width="90"  height="90"></canvas>
+      </div>
+
+      <!-- Controls -->
+      <div class="wheel-controls">
+        <div class="wheel-preview-row">
+          <div class="wheel-preview-swatch" id="previewSwatch"></div>
+          <div class="wheel-hex-display" id="hexDisplay"><span class="caret">^</span><span id="hexVal">c8c8ff</span></div>
+        </div>
+        <div class="slider-row">
+          <label>HUE</label>
+          <input type="range" id="hueSlider" min="0" max="360" value="240">
+        </div>
+        <div class="slider-row">
+          <label>SATURATION</label>
+          <input type="range" id="satSlider" min="0" max="100" value="22">
+        </div>
+        <div class="slider-row">
+          <label>BRIGHTNESS</label>
+          <input type="range" id="valSlider" min="0" max="100" value="100">
+        </div>
+        <div class="rgb-row">
+          <div class="rgb-field" id="rField"><span class="ch">R</span>200</div>
+          <div class="rgb-field" id="gField"><span class="ch">G</span>200</div>
+          <div class="rgb-field" id="bField"><span class="ch">B</span>255</div>
+        </div>
+        <button class="wheel-insert-btn" id="wheelInsert">⊕ Insert Color</button>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <span class="toolbar-label">Insert:</span>
+      <button class="btn" id="insertBreak">↵ \r</button>
+      <button class="btn" id="insertDoubleBreak">↵↵ \r\r</button>
+      <button class="btn btn-accent" id="loadExample">Load Example</button>
+      <button class="btn btn-warn"   id="clearAll">Clear</button>
+    </div>
+
+    <div class="editor-area">
+      <textarea id="codeInput" placeholder="Type your hint box code here...&#10;Example: ^f1c40f___ Title ___\r^e74c3cItem: ^2af10f100"></textarea>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: Preview ── -->
+  <div class="panel preview-panel">
+    <div class="panel-label">Live Preview</div>
+    <div class="preview-stage">
+      <span class="stage-label">PREVIEW · IN-GAME SIMULATION</span>
+      <div class="hint-box" id="preview"></div>
+    </div>
+  </div>
+
+  <!-- ── BOTTOM ── -->
+  <div class="bottom-bar">
+    <span class="toolbar-label">RAW:</span>
+    <div class="raw-output" id="rawOutput">&nbsp;</div>
+    <button class="btn btn-accent" id="copyBtn">Copy</button>
+    <span class="copy-status" id="copyStatus">✓ Copied!</span>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  COLOR WHEEL  (hue ring + SV square, all canvas-drawn)
+// ═══════════════════════════════════════════════════════════
+const wheelCanvas = document.getElementById('wheelCanvas');
+const svCanvas    = document.getElementById('svCanvas');
+const wCtx  = wheelCanvas.getContext('2d');
+const svCtx = svCanvas.getContext('2d');
+
+const WHEEL_SIZE = 150;
+const RING_THICK = 18;
+const SV_SIZE    = 90;
+const CENTER     = WHEEL_SIZE / 2;
+const OUTER_R    = CENTER - 1;
+const INNER_R    = CENTER - RING_THICK;
+
+// Centre the SV square inside the wheel ring
+svCanvas.style.left = ((WHEEL_SIZE - SV_SIZE) / 2) + 'px';
+svCanvas.style.top  = ((WHEEL_SIZE - SV_SIZE) / 2) + 'px';
+
+// Current HSV state
+let hsv = { h: 240, s: 22, v: 100 };
+
+// ── Hue ring ─────────────────────────────────────────────
+function drawHueRing() {
+  const steps = 360;
+  for (let i = 0; i < steps; i++) {
+    const a1 = (i       / steps) * Math.PI * 2 - Math.PI / 2;
+    const a2 = ((i + 1) / steps) * Math.PI * 2 - Math.PI / 2;
+    wCtx.beginPath();
+    wCtx.arc(CENTER, CENTER, OUTER_R, a1, a2);
+    wCtx.arc(CENTER, CENTER, INNER_R, a2, a1, true);
+    wCtx.closePath();
+    wCtx.fillStyle = `hsl(${i},100%,50%)`;
+    wCtx.fill();
+  }
+  // punch out center
+  wCtx.beginPath();
+  wCtx.arc(CENTER, CENTER, INNER_R - 0.5, 0, Math.PI * 2);
+  wCtx.fillStyle = '#0d0f14';
+  wCtx.fill();
+}
+
+// ── Hue cursor ───────────────────────────────────────────
+function drawHueCursor() {
+  const a   = (hsv.h / 360) * Math.PI * 2 - Math.PI / 2;
+  const mid = INNER_R + RING_THICK / 2;
+  const cx  = CENTER + Math.cos(a) * mid;
+  const cy  = CENTER + Math.sin(a) * mid;
+
+  wCtx.beginPath();
+  wCtx.arc(cx, cy, 8, 0, Math.PI * 2);
+  wCtx.fillStyle = `hsl(${hsv.h},100%,50%)`;
+  wCtx.fill();
+  wCtx.strokeStyle = '#fff';
+  wCtx.lineWidth = 2.5;
+  wCtx.stroke();
+}
+
+function drawWheel() {
+  wCtx.clearRect(0, 0, WHEEL_SIZE, WHEEL_SIZE);
+  drawHueRing();
+  drawHueCursor();
+}
+
+// ── SV square ────────────────────────────────────────────
+function drawSV() {
+  svCtx.clearRect(0, 0, SV_SIZE, SV_SIZE);
+
+  // Horizontal: white → pure hue
+  const gH = svCtx.createLinearGradient(0, 0, SV_SIZE, 0);
+  gH.addColorStop(0, '#fff');
+  gH.addColorStop(1, `hsl(${hsv.h},100%,50%)`);
+  svCtx.fillStyle = gH;
+  svCtx.fillRect(0, 0, SV_SIZE, SV_SIZE);
+
+  // Vertical: transparent → black
+  const gV = svCtx.createLinearGradient(0, 0, 0, SV_SIZE);
+  gV.addColorStop(0, 'rgba(0,0,0,0)');
+  gV.addColorStop(1, 'rgba(0,0,0,1)');
+  svCtx.fillStyle = gV;
+  svCtx.fillRect(0, 0, SV_SIZE, SV_SIZE);
+
+  // SV cursor
+  const cx = (hsv.s / 100) * SV_SIZE;
+  const cy = (1 - hsv.v / 100) * SV_SIZE;
+  svCtx.beginPath();
+  svCtx.arc(cx, cy, 7, 0, Math.PI * 2);
+  svCtx.strokeStyle = 'rgba(0,0,0,.6)';
+  svCtx.lineWidth = 3;
+  svCtx.stroke();
+  svCtx.beginPath();
+  svCtx.arc(cx, cy, 7, 0, Math.PI * 2);
+  svCtx.strokeStyle = '#fff';
+  svCtx.lineWidth = 1.5;
+  svCtx.stroke();
+}
+
+// ── HSV → RGB ────────────────────────────────────────────
+function hsvToRgb(h, s, v) {
+  s /= 100; v /= 100;
+  const c = v * s;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = v - c;
+  let r = 0, g = 0, b = 0;
+  if      (h < 60)  { r=c; g=x; }
+  else if (h < 120) { r=x; g=c; }
+  else if (h < 180) { g=c; b=x; }
+  else if (h < 240) { g=x; b=c; }
+  else if (h < 300) { r=x; b=c; }
+  else              { r=c; b=x; }
+  return [Math.round((r+m)*255), Math.round((g+m)*255), Math.round((b+m)*255)];
+}
+function toHex2(n) { return n.toString(16).padStart(2,'0'); }
+function getHex() {
+  const [r,g,b] = hsvToRgb(hsv.h, hsv.s, hsv.v);
+  return toHex2(r) + toHex2(g) + toHex2(b);
+}
+
+// ── Sync UI panels ───────────────────────────────────────
+function syncUI() {
+  const hex = getHex();
+  const [r,g,b] = hsvToRgb(hsv.h, hsv.s, hsv.v);
+  const color = '#' + hex;
+
+  document.getElementById('previewSwatch').style.background = color;
+  document.getElementById('hexVal').textContent = hex;
+  document.getElementById('rField').innerHTML = `<span class="ch">R</span>${r}`;
+  document.getElementById('gField').innerHTML = `<span class="ch">G</span>${g}`;
+  document.getElementById('bField').innerHTML = `<span class="ch">B</span>${b}`;
+
+  // Update sliders without triggering their events
+  _silent = true;
+  document.getElementById('hueSlider').value = hsv.h;
+  document.getElementById('satSlider').value = hsv.s;
+  document.getElementById('valSlider').value = hsv.v;
+  _silent = false;
+
+  // Tint sat/val tracks
+  document.getElementById('satSlider').style.background =
+    `linear-gradient(to right, hsl(${hsv.h},0%,50%), hsl(${hsv.h},100%,50%))`;
+  document.getElementById('valSlider').style.background =
+    `linear-gradient(to right, #000, hsl(${hsv.h},100%,50%))`;
+}
+
+let _silent = false;
+function redraw() {
+  drawWheel();
+  drawSV();
+  syncUI();
+}
+
+// ── Hue ring drag ────────────────────────────────────────
+function pickHue(e) {
+  const rect = wheelCanvas.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const x = clientX - rect.left - CENTER;
+  const y = clientY - rect.top  - CENTER;
+  const dist = Math.sqrt(x*x + y*y);
+  if (dist >= INNER_R - 4 && dist <= CENTER + 4) {
+    hsv.h = ((Math.atan2(y, x) + Math.PI/2) * 180 / Math.PI + 360) % 360;
+    redraw();
+  }
+}
+let draggingWheel = false;
+wheelCanvas.addEventListener('mousedown',  e => { draggingWheel = true; pickHue(e); });
+window    .addEventListener('mousemove',   e => { if (draggingWheel) pickHue(e); });
+window    .addEventListener('mouseup',    () => { draggingWheel = false; });
+wheelCanvas.addEventListener('touchstart', e => { draggingWheel = true; pickHue(e); e.preventDefault(); }, {passive:false});
+window    .addEventListener('touchmove',   e => { if (draggingWheel) pickHue(e); }, {passive:false});
+window    .addEventListener('touchend',   () => { draggingWheel = false; });
+
+// ── SV square drag ───────────────────────────────────────
+function pickSV(e) {
+  const rect = svCanvas.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  const x = Math.max(0, Math.min(SV_SIZE, clientX - rect.left));
+  const y = Math.max(0, Math.min(SV_SIZE, clientY - rect.top));
+  hsv.s = (x / SV_SIZE) * 100;
+  hsv.v = (1 - y / SV_SIZE) * 100;
+  redraw();
+}
+let draggingSV = false;
+svCanvas.addEventListener('mousedown',  e => { draggingSV = true; pickSV(e); });
+window  .addEventListener('mousemove',  e => { if (draggingSV) pickSV(e); });
+window  .addEventListener('mouseup',   () => { draggingSV = false; });
+svCanvas.addEventListener('touchstart', e => { draggingSV = true; pickSV(e); e.preventDefault(); }, {passive:false});
+window  .addEventListener('touchmove',  e => { if (draggingSV) pickSV(e); }, {passive:false});
+window  .addEventListener('touchend',  () => { draggingSV = false; });
+
+// ── Sliders ──────────────────────────────────────────────
+document.getElementById('hueSlider').addEventListener('input', function() {
+  if (_silent) return; hsv.h = +this.value; redraw();
+});
+document.getElementById('satSlider').addEventListener('input', function() {
+  if (_silent) return; hsv.s = +this.value; redraw();
+});
+document.getElementById('valSlider').addEventListener('input', function() {
+  if (_silent) return; hsv.v = +this.value; redraw();
+});
+
+// ── Hex → HSV helper (for preset swatches) ───────────────
+function hexToHsv(hex) {
+  const r = parseInt(hex.slice(0,2),16)/255;
+  const g = parseInt(hex.slice(2,4),16)/255;
+  const b = parseInt(hex.slice(4,6),16)/255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b), d = max-min;
+  let h = 0;
+  if (d) {
+    if      (max===r) h = ((g-b)/d + 6) % 6;
+    else if (max===g) h = (b-r)/d + 2;
+    else              h = (r-g)/d + 4;
+    h *= 60;
+  }
+  return { h, s: max ? d/max*100 : 0, v: max*100 };
+}
+
+// ── Preset swatch clicks → update wheel + insert ─────────
+document.querySelectorAll('.color-swatch').forEach(sw => {
+  sw.addEventListener('click', () => {
+    hsv = hexToHsv(sw.dataset.hex);
+    redraw();
+    insertAtCursor(codeInput, '^' + sw.dataset.hex);
+  });
+});
+
+// ── Insert from wheel ────────────────────────────────────
+document.getElementById('wheelInsert').addEventListener('click', () => {
+  insertAtCursor(codeInput, '^' + getHex());
+});
+
+// ═══════════════════════════════════════════════════════════
+//  HINT BOX PARSER
+// ═══════════════════════════════════════════════════════════
+const codeInput  = document.getElementById('codeInput');
+const preview    = document.getElementById('preview');
+const rawOutput  = document.getElementById('rawOutput');
+const copyBtn    = document.getElementById('copyBtn');
+const copyStatus = document.getElementById('copyStatus');
+
+function parseHintCode(raw) {
+  const lines = raw.split(/\\\\r|\\r/);
+  const frag  = document.createDocumentFragment();
+  lines.forEach((line, li) => {
+    const span = document.createElement('span');
+    span.className = 'hint-line';
+    const re = /\^([0-9a-fA-F]{6})/g;
+    let last = 0, color = null, m;
+    const segs = [];
+    while ((m = re.exec(line)) !== null) {
+      if (m.index > last) segs.push({ color, text: line.slice(last, m.index) });
+      color = '#' + m[1];
+      last  = re.lastIndex;
+    }
+    if (last < line.length) segs.push({ color, text: line.slice(last) });
+    if (!segs.length)       segs.push({ color: null, text: line });
+    segs.forEach(seg => {
+      if (!seg.text) return;
+      const s = document.createElement('span');
+      s.textContent = seg.text;
+      if (seg.color) s.style.color = seg.color;
+      span.appendChild(s);
+    });
+    frag.appendChild(span);
+    if (li < lines.length - 1) frag.appendChild(document.createElement('br'));
+  });
+  return frag;
+}
+
+function render() {
+  const raw = codeInput.value;
+  preview.innerHTML = '';
+  preview.appendChild(parseHintCode(raw));
+  rawOutput.textContent = raw.replace(/\n/g, '') || ' ';
+}
+codeInput.addEventListener('input', render);
+
+function insertAtCursor(ta, text) {
+  const s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
+  ta.value = v.slice(0,s) + text + v.slice(e);
+  ta.selectionStart = ta.selectionEnd = s + text.length;
+  ta.focus(); render();
+}
+
+document.getElementById('insertBreak')      .addEventListener('click', () => insertAtCursor(codeInput, '\\r'));
+document.getElementById('insertDoubleBreak').addEventListener('click', () => insertAtCursor(codeInput, '\\r\\r'));
+document.getElementById('clearAll')         .addEventListener('click', () => { codeInput.value = ''; render(); });
+document.getElementById('loadExample')      .addEventListener('click', () => {
+  codeInput.value = '^f1c40f_______ Attack _________\\r^e74c3cTier 1 :       ^2af10f100  Attack\\r^e74c3cTier 2 :       ^2af10f200  Attack\\r^e74c3cTier 3 :       ^2af10f300  Attack\\r^e74c3cTier 4 :       ^2af10f400  Attack\\r^e74c3cTier 5 :       ^2af10f500  Attack';
+  render();
+});
+function copyToClipboard() {
+  const text = codeInput.value.replace(/\n/g, '');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(showCopied).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  showCopied();
+}
+function showCopied() {
+  copyStatus.classList.add('show');
+  setTimeout(() => copyStatus.classList.remove('show'), 2000);
+}
+copyBtn.addEventListener('click', copyToClipboard);
+rawOutput.addEventListener('click', copyToClipboard);
+
+// ── Boot ─────────────────────────────────────────────────
+redraw();
+codeInput.value = '^f1c40f_______ Attack _________\\r^e74c3cTier 1 :       ^2af10f100  Attack\\r^e74c3cTier 2 :       ^2af10f200  Attack\\r^e74c3cTier 3 :       ^2af10f300  Attack\\r^e74c3cTier 4 :       ^2af10f400  Attack\\r^e74c3cTier 5 :       ^2af10f500  Attack';
+render();
+</script>
+</body>
+</html>
