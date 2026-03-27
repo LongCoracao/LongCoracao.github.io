@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NPC Services — Dev Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:          #0a0c10;
+    --panel:       #111318;
+    --border:      #2a2d38;
+    --accent:      #4ab8f0;
+    --accent-glow: rgba(74,184,240,.18);
+    --accent2:     #f0a84a;
+    --dim:         #3a3d4a;
+    --text:        #c8ccd8;
+    --text-dim:    #5a5e72;
+    --success:     #2ecc71;
+    --danger:      #e74c3c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Rajdhani', sans-serif; font-size: 15px;
+    min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden;
+  }
+
+  /* ─── Header ─── */
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 24px; border-bottom: 1px solid var(--border);
+    background: var(--panel); flex-shrink: 0;
+  }
+  .logo-mark {
+    width: 34px; height: 34px; border: 2px solid var(--accent); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--accent); text-shadow: 0 0 8px var(--accent); flex-shrink: 0;
+  }
+  header h1 { font-size: 17px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #fff; }
+  header h1 span { color: var(--accent); }
+  .hub-btn {
+    margin-left: auto; display: flex; align-items: center; gap: 7px;
+    font-family: 'Share Tech Mono', monospace; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim); text-decoration: none;
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 6px 14px; background: transparent; transition: all .15s; flex-shrink: 0;
+  }
+  .hub-btn:hover { color: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+  .hub-btn::before { content: '←'; font-size: 13px; }
+
+  /* ─── Main ─── */
+  .main { flex: 1; display: flex; flex-direction: column; padding: 18px; gap: 14px; overflow-y: auto; }
+
+  /* ─── Tab Bar ─── */
+  .tab-bar {
+    display: flex; gap: 4px; background: var(--panel);
+    border: 1px solid var(--border); border-radius: 7px; padding: 5px; flex-shrink: 0;
+  }
+  .tab-btn {
+    flex: 1; padding: 8px 14px;
+    font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim); background: transparent;
+    border: 1px solid transparent; border-radius: 5px; cursor: pointer; transition: all .15s;
+  }
+  .tab-btn:hover { color: var(--text); background: rgba(255,255,255,.04); }
+  .tab-btn.active {
+    color: var(--accent); background: rgba(74,184,240,.1);
+    border-color: rgba(74,184,240,.3); text-shadow: 0 0 8px rgba(74,184,240,.4);
+  }
+
+  /* ─── Tab Panels ─── */
+  .tab-panel { display: none; flex-direction: column; gap: 14px; }
+  .tab-panel.active { display: flex; }
+
+  /* ─── Group Box ─── */
+  .group-box { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; }
+  .group-title {
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text-dim); font-family: 'Share Tech Mono', monospace;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+  }
+  .group-title::before {
+    content: ''; display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent);
+  }
+
+  /* ─── Toolbar ─── */
+  .toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .toolbar-label {
+    font-size: 11px; color: var(--text-dim); letter-spacing: 1px;
+    font-family: 'Share Tech Mono', monospace; margin-right: auto;
+  }
+
+  /* ─── Checkbox Grid ─── */
+  .check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px 14px; }
+
+  /* ─── Custom Checkbox ─── */
+  .check-item {
+    display: flex; align-items: center; gap: 9px; padding: 7px 10px;
+    border-radius: 5px; border: 1px solid transparent;
+    cursor: pointer; transition: all .12s; user-select: none;
+  }
+  .check-item:hover { background: rgba(74,184,240,.05); border-color: rgba(74,184,240,.15); }
+  .check-item.checked { background: rgba(74,184,240,.08); border-color: rgba(74,184,240,.28); }
+
+  .check-box {
+    width: 16px; height: 16px; flex-shrink: 0;
+    border: 1.5px solid var(--dim); border-radius: 3px;
+    background: transparent; position: relative; transition: all .12s;
+  }
+  .check-item.checked .check-box {
+    background: var(--accent); border-color: var(--accent); box-shadow: 0 0 6px rgba(74,184,240,.4);
+  }
+  .check-item.checked .check-box::after {
+    content: ''; position: absolute; top: 2px; left: 5px;
+    width: 4px; height: 7px; border: 2px solid #0a0c10;
+    border-top: none; border-left: none; transform: rotate(45deg);
+  }
+  .check-label { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; transition: color .12s; }
+  .check-item.checked .check-label { color: #fff; }
+
+  /* ─── Result / Decode bar ─── */
+  .result-bar {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 6px; padding: 14px 18px;
+    display: flex; align-items: center; gap: 10px;
+    flex-shrink: 0; flex-wrap: wrap;
+  }
+  .result-label {
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text-dim); font-family: 'Share Tech Mono', monospace; flex-shrink: 0;
+  }
+  #resultInput {
+    flex: 1; min-width: 160px;
+    background: #080a0d; border: 1px solid var(--border); border-radius: 5px;
+    padding: 7px 12px; font-family: 'Share Tech Mono', monospace;
+    font-size: 18px; font-weight: 700; color: var(--accent);
+    letter-spacing: 2px; outline: none; transition: border-color .15s;
+    text-shadow: 0 0 10px rgba(74,184,240,.3);
+  }
+  #resultInput:focus { border-color: var(--accent); }
+  #resultInput::placeholder {
+    color: var(--text-dim); font-size: 12px; text-shadow: none;
+    font-weight: 400; letter-spacing: 1px;
+  }
+  /* hide browser number spinners */
+  #resultInput::-webkit-inner-spin-button,
+  #resultInput::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  #resultInput { -moz-appearance: textfield; }
+
+  .result-bits {
+    font-family: 'Share Tech Mono', monospace; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 1px; flex-shrink: 0;
+  }
+
+  /* ─── Buttons ─── */
+  .btn {
+    font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 600;
+    letter-spacing: 1px; cursor: pointer; border-radius: 4px;
+    border: 1px solid var(--dim); background: var(--panel);
+    color: var(--text); padding: 6px 16px; transition: all .15s;
+    text-transform: uppercase; white-space: nowrap; flex-shrink: 0;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+  .btn-go {
+    background: rgba(74,184,240,.1); border-color: var(--accent);
+    color: var(--accent); padding: 8px 24px; font-size: 14px; letter-spacing: 2px;
+  }
+  .btn-go:hover { background: rgba(74,184,240,.2); box-shadow: 0 0 14px var(--accent-glow); }
+  .btn-reverse {
+    background: rgba(240,168,74,.07); border-color: rgba(240,168,74,.4);
+    color: var(--accent2);
+  }
+  .btn-reverse:hover { background: rgba(240,168,74,.15); border-color: var(--accent2); box-shadow: 0 0 10px rgba(240,168,74,.2); }
+  .btn-warn { border-color: #60273a; color: var(--danger); }
+  .btn-warn:hover { background: rgba(231,76,60,.1); border-color: var(--danger); box-shadow: none; }
+  .btn-sm { padding: 4px 10px; font-size: 11px; letter-spacing: 1px; }
+
+  /* ─── Copy flash ─── */
+  .copy-flash {
+    font-family: 'Share Tech Mono', monospace; font-size: 11px;
+    color: var(--success); letter-spacing: 1px; opacity: 0; transition: opacity .3s; flex-shrink: 0;
+  }
+  .copy-flash.show { opacity: 1; }
+
+  /* ─── Status Bar ─── */
+  #statusBar {
+    padding: 6px 20px; background: #0d0f14; border-top: 1px solid var(--border);
+    font-family: 'Share Tech Mono', monospace; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 1px;
+    flex-shrink: 0; display: flex; align-items: center; gap: 8px;
+  }
+  #statusBar::before { content: '●'; color: var(--accent); font-size: 8px; text-shadow: 0 0 6px var(--accent); }
+
+  @media (max-width: 600px) {
+    header { padding: 12px 14px; }
+    header h1 { font-size: 13px; letter-spacing: 1px; }
+    .check-grid { grid-template-columns: 1fr; }
+    #resultInput { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">🛎</div>
+  <h1>NPC &nbsp;<span>Services</span></h1>
+  <a class="hub-btn" href="index.html">Hub</a>
+</header>
+
+<div class="main">
+
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="1">Service List 1</button>
+    <button class="tab-btn"        data-tab="2">Service List 2</button>
+    <button class="tab-btn"        data-tab="3">Service List 3</button>
+  </div>
+
+  <!-- Tab 1 -->
+  <div class="tab-panel active" id="panel-1">
+    <div class="group-box">
+      <div class="group-title">Service List 1</div>
+      <div class="toolbar">
+        <span class="toolbar-label" id="count-1">0 selected</span>
+        <button class="btn btn-sm" onclick="selectAll(1)">Select All</button>
+        <button class="btn btn-sm" onclick="deselectAll(1)">Clear All</button>
+      </div>
+      <div class="check-grid" id="grid-1"></div>
+    </div>
+  </div>
+
+  <!-- Tab 2 -->
+  <div class="tab-panel" id="panel-2">
+    <div class="group-box">
+      <div class="group-title">Service List 2</div>
+      <div class="toolbar">
+        <span class="toolbar-label" id="count-2">0 selected</span>
+        <button class="btn btn-sm" onclick="selectAll(2)">Select All</button>
+        <button class="btn btn-sm" onclick="deselectAll(2)">Clear All</button>
+      </div>
+      <div class="check-grid" id="grid-2"></div>
+    </div>
+  </div>
+
+  <!-- Tab 3 -->
+  <div class="tab-panel" id="panel-3">
+    <div class="group-box">
+      <div class="group-title">Service List 3</div>
+      <div class="toolbar">
+        <span class="toolbar-label" id="count-3">0 selected</span>
+        <button class="btn btn-sm" onclick="selectAll(3)">Select All</button>
+        <button class="btn btn-sm" onclick="deselectAll(3)">Clear All</button>
+      </div>
+      <div class="check-grid" id="grid-3"></div>
+    </div>
+  </div>
+
+  <!-- Result / Decode Bar -->
+  <div class="result-bar">
+    <span class="result-label">Result</span>
+    <input type="number" id="resultInput" placeholder="Select services  —  or paste a number &amp; click Reverse">
+    <span class="result-bits" id="resultBits"></span>
+    <button class="btn btn-go"      id="btnGo">Go !</button>
+    <button class="btn btn-reverse" id="btnReverse">Reverse</button>
+    <button class="btn btn-warn"    id="btnReset">Reset</button>
+    <span class="copy-flash" id="copyFlash">COPIED!</span>
+  </div>
+
+</div>
+
+<div id="statusBar">Ready — select services then click Go!</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  DATA — sorted alphabetically per list
+// ══════════════════════════════════════════════════════════════
+const TABLES = {
+  1: [
+    ['Academy Pet',                         2],
+    ['Auction service',                     128],
+    ['Bet',                                 262144],
+    ['Choose a profession',                 8388608],
+    ['Choose specials. subjects',           16777216],
+    ['Connect gems',                        268435456],
+    ['Container card',                      8192],
+    ['Equipment',                           1048576],
+    ['Gang service',                        16],
+    ['Guild warehouse',                     16384],
+    ['Inlay, extraction and synthesis',     67108864],
+    ['Leave the Battlefield',               4096],
+    ['Magic related services',              32768],
+    ['Magical perfection for pets',         131072],
+    ['Mail',                                64],
+    ['NPC merger',                          256],
+    ['Pet improvement',                     512],
+    ['Pet rebirth',                         1024],
+    ['Pet without a host',                  65536],
+    ['Re-evaluate equipment',               1073741824],
+    ['Remove gems',                         536870912],
+    ['Remove the runes',                    4194304],
+    ['Rename pet',                          1],
+    ['Repair equipment',                    524288],
+    ['Runic mosaic',                        2097152],
+    ['Runes synthesis',                     2147483648],
+    ['Station detection service',           8],
+    ['Take the temple',                     32],
+    ['Training pet spirit',                 4],
+    ['Training skills',                     33554432],
+    ['Training skills of the profession',   134217728],
+    ['Urban warfare services',              2048],
+  ],
+  2: [
+    ['Aircraft Paint',                      262144],
+    ['Attaching a soul to the skill',       268435456],
+    ['Attribute identification attribute',  536870912],
+    ['Change of appearance',                1073741824],
+    ['Change the name of the character',    2147483648],
+    ['Changing hairstyles and hair color',  2097152],
+    ['Check buildings on the guild base',   128],
+    ['Create a Guild',                      16384],
+    ['Dyeing clothes',                      4194304],
+    ['Effect Transfer',                     65536],
+    ['Equipment Melting',                   524288],
+    ['Exchange gift card',                  8388608],
+    ['Guild Base Auction',                  1],
+    ['Guild Base Migration',                2],
+    ['Horror cleaning',                     67108864],
+    ['Log in to your guild base',           4],
+    ['Magical pet',                         4096],
+    ['Mastery and Resistance (Reset)',       131072],
+    ['Pet Inheritance',                     512],
+    ['Pet rating',                          134217728],
+    ['Resistance Improvement',              1024],
+    ['Return to the ground entrance',       16],
+    ['Select a guild base to enter',        8],
+    ['Set a Trade Tax',                     64],
+    ['Set an entrance fee to the base',     32],
+    ['Synthesis Runes',                     1048576],
+    ['Transfer properties',                 33554432],
+    ['Treasure Hunt Services',              2048],
+  ],
+  3: [
+    ['Auction of the guild',                16],
+    ['Awareness: resetting the skill',      64],
+    ['Awakening of the reset',              128],
+    ['Change gender',                       256],
+    ['Changing the name of the guild',      2],
+    ['Merging the souls of pets',           4],
+    ['Reset the characteristics of the stone of the spirit', 1],
+    ['Synthesis of the trace',              32],
+    ['Turning the pet',                     8],
+  ],
+};
+
+// ══════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════
+const checked = { 1: {}, 2: {}, 3: {} };
+let activeTab = '1';
+
+// ══════════════════════════════════════════════════════════════
+//  BUILD GRIDS
+// ══════════════════════════════════════════════════════════════
+function buildGrid(tab) {
+  const grid = document.getElementById(`grid-${tab}`);
+  TABLES[tab].forEach(([label], idx) => {
+    const item = document.createElement('div');
+    item.className = 'check-item';
+    item.dataset.idx = idx;
+    item.innerHTML = `<div class="check-box"></div><span class="check-label">${label}</span>`;
+    item.addEventListener('click', () => toggle(tab, idx, item));
+    grid.appendChild(item);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TOGGLE / SELECT ALL / DESELECT ALL
+// ══════════════════════════════════════════════════════════════
+function toggle(tab, idx, el) {
+  checked[tab][idx] = !checked[tab][idx];
+  el.classList.toggle('checked', !!checked[tab][idx]);
+  updateCountLabel(tab);
+  syncResultInput();
+}
+
+function selectAll(tab) {
+  TABLES[tab].forEach((_, idx) => { checked[tab][idx] = true; });
+  document.querySelectorAll(`#grid-${tab} .check-item`).forEach(el => el.classList.add('checked'));
+  updateCountLabel(tab);
+  syncResultInput();
+}
+
+function deselectAll(tab) {
+  checked[tab] = {};
+  document.querySelectorAll(`#grid-${tab} .check-item`).forEach(el => el.classList.remove('checked'));
+  updateCountLabel(tab);
+  syncResultInput();
+}
+
+function updateCountLabel(tab) {
+  const n = Object.values(checked[tab]).filter(Boolean).length;
+  document.getElementById(`count-${tab}`).textContent = `${n} of ${TABLES[tab].length} selected`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  COMPUTE + SYNC RESULT INPUT
+// ══════════════════════════════════════════════════════════════
+function computeResult(tab) {
+  let sum = 0;
+  TABLES[tab].forEach(([, val], idx) => { if (checked[tab][idx]) sum += val; });
+  return sum;
+}
+
+function syncResultInput() {
+  const tab = parseInt(activeTab);
+  const sum = computeResult(tab);
+  const bitsEl = document.getElementById('resultBits');
+  if (sum === 0) {
+    document.getElementById('resultInput').value = '';
+    bitsEl.textContent = '';
+    setStatus('No services selected');
+  } else {
+    document.getElementById('resultInput').value = sum;
+    const n = Object.values(checked[tab]).filter(Boolean).length;
+    bitsEl.textContent = `${n} service${n !== 1 ? 's' : ''}`;
+    setStatus(`Result: ${sum}  ·  ${n} service${n !== 1 ? 's' : ''} selected`);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  GO! — copy whatever is in the result box
+// ══════════════════════════════════════════════════════════════
+function doGo() {
+  const val = document.getElementById('resultInput').value.trim();
+  if (!val || val === '0') { setStatus('Nothing to copy — select services or enter a number first'); return; }
+  copyText(val);
+  setStatus(`Result: ${val} — copied to clipboard`);
+}
+
+function copyText(text) {
+  const flash = document.getElementById('copyFlash');
+  const show = () => { flash.classList.add('show'); setTimeout(() => flash.classList.remove('show'), 1800); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(show).catch(() => { fallbackCopy(text); show(); });
+  } else { fallbackCopy(text); show(); }
+}
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  document.execCommand('copy'); document.body.removeChild(ta);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  REVERSE — decode number → check matching services
+// ══════════════════════════════════════════════════════════════
+function doReverse() {
+  const raw = document.getElementById('resultInput').value.trim();
+  const num = parseInt(raw, 10);
+  if (!raw || isNaN(num) || num <= 0) {
+    setStatus('Enter a valid number in the result box first');
+    return;
+  }
+
+  const tab = parseInt(activeTab);
+
+  // Clear this tab
+  checked[tab] = {};
+  document.querySelectorAll(`#grid-${tab} .check-item`).forEach(el => el.classList.remove('checked'));
+
+  // Greedy decode: largest values first (bitmask — each value is a unique power of 2)
+  let remaining = num;
+  let matched = 0;
+
+  const sortedByVal = TABLES[tab]
+    .map(([, val], idx) => ({ val, idx }))
+    .sort((a, b) => b.val - a.val);
+
+  for (const { val, idx } of sortedByVal) {
+    if (remaining >= val) {
+      remaining -= val;
+      checked[tab][idx] = true;
+      matched++;
+    }
+  }
+
+  // Reflect in DOM
+  document.querySelectorAll(`#grid-${tab} .check-item`).forEach(el => {
+    el.classList.toggle('checked', !!checked[tab][parseInt(el.dataset.idx)]);
+  });
+
+  updateCountLabel(tab);
+
+  const bitsEl = document.getElementById('resultBits');
+  if (matched === 0) {
+    bitsEl.textContent = '';
+    setStatus(`No services matched for ${num} in this list`);
+  } else if (remaining !== 0) {
+    bitsEl.textContent = `${matched} matched · ${remaining} leftover`;
+    setStatus(`Decoded ${matched} service${matched !== 1 ? 's' : ''} — ${remaining} leftover (may belong to another list)`);
+  } else {
+    bitsEl.textContent = `${matched} service${matched !== 1 ? 's' : ''}`;
+    setStatus(`Decoded: ${matched} service${matched !== 1 ? 's' : ''} — exact match`);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RESET
+// ══════════════════════════════════════════════════════════════
+function doReset() {
+  [1, 2, 3].forEach(tab => {
+    checked[tab] = {};
+    document.querySelectorAll(`#grid-${tab} .check-item`).forEach(el => el.classList.remove('checked'));
+    updateCountLabel(tab);
+  });
+  document.getElementById('resultInput').value = '';
+  document.getElementById('resultBits').textContent = '';
+  setStatus('All selections reset');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════════════════════
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${tab}`));
+  syncResultInput();
+}
+
+function setStatus(msg) { document.getElementById('statusBar').textContent = msg; }
+
+// ══════════════════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════════════════
+[1, 2, 3].forEach(t => { buildGrid(t); updateCountLabel(t); });
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+document.getElementById('btnGo').addEventListener('click', doGo);
+document.getElementById('btnReverse').addEventListener('click', doReverse);
+document.getElementById('btnReset').addEventListener('click', doReset);
+
+// Press Enter in result box = Reverse
+document.getElementById('resultInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doReverse();
+});
+</script>
+</body>
+</html>
