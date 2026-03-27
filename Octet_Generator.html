@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octet Generator — Dev Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0c10;
+    --panel:     #111318;
+    --border:    #2a2d38;
+    --accent:    #4af0c8;
+    --accent2:   #f0a84a;
+    --dim:       #3a3d4a;
+    --text:      #c8ccd8;
+    --text-dim:  #5a5e72;
+    --danger:    #e74c3c;
+    --success:   #2ecc71;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  /* ─── Header ─── */
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    flex-shrink: 0;
+  }
+  .logo-mark {
+    width: 34px; height: 34px;
+    border: 2px solid var(--accent); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Share Tech Mono', monospace; font-size: 13px;
+    color: var(--accent); text-shadow: 0 0 8px var(--accent); flex-shrink: 0;
+    letter-spacing: 0;
+  }
+  header h1 {
+    font-size: 17px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: #fff;
+  }
+  header h1 span { color: var(--accent); }
+  .hub-btn {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 7px;
+    font-family: 'Share Tech Mono', monospace; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim); text-decoration: none;
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 6px 14px; background: transparent;
+    transition: all .15s; flex-shrink: 0;
+  }
+  .hub-btn:hover {
+    color: var(--accent); border-color: var(--accent);
+    box-shadow: 0 0 8px rgba(74,240,200,.12);
+  }
+  .hub-btn::before { content: '←'; font-size: 13px; }
+
+  /* ─── Status Bar ─── */
+  #statusBar {
+    padding: 6px 20px;
+    background: #0d0f14;
+    border-top: 1px solid var(--border);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #statusBar::before {
+    content: '●';
+    color: var(--accent);
+    font-size: 8px;
+    text-shadow: 0 0 6px var(--accent);
+  }
+
+  /* ─── Main Layout ─── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  /* ─── Group Box ─── */
+  .group-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .group-title {
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text-dim); font-family: 'Share Tech Mono', monospace;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .group-title::before {
+    content: ''; display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent);
+  }
+
+  /* ─── Form Row ─── */
+  .form-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .form-row:last-child { margin-bottom: 0; }
+  .form-label {
+    font-size: 13px; font-weight: 600; color: var(--text-dim);
+    letter-spacing: 1px; min-width: 130px; flex-shrink: 0;
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  /* ─── Custom Searchable Select ─── */
+  .cs-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+  .cs-wrapper.disabled { opacity: 0.38; pointer-events: none; }
+
+  .cs-display {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #0d0f14; border: 1px solid var(--border); border-radius: 5px;
+    padding: 7px 12px; cursor: pointer;
+    font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--text);
+    transition: border-color .15s;
+    user-select: none; min-height: 34px;
+  }
+  .cs-display:hover { border-color: var(--dim); }
+  .cs-display.open { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(74,240,200,.15); }
+  .cs-value { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cs-value.placeholder { color: var(--text-dim); }
+  .cs-arrow {
+    flex-shrink: 0; font-size: 10px; color: var(--text-dim);
+    transition: transform .2s; margin-left: 8px;
+  }
+  .cs-display.open .cs-arrow { transform: rotate(180deg); color: var(--accent); }
+
+  .cs-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 999;
+    background: #0d0f14; border: 1px solid var(--accent);
+    border-radius: 5px; overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,.6), 0 0 0 1px rgba(74,240,200,.1);
+    display: none;
+  }
+  .cs-dropdown.open { display: flex; flex-direction: column; }
+
+  .cs-search {
+    width: 100%; padding: 8px 12px;
+    background: #090b0e; border: none; border-bottom: 1px solid var(--border);
+    color: var(--text); font-family: 'Share Tech Mono', monospace; font-size: 12px;
+    outline: none;
+  }
+  .cs-search::placeholder { color: var(--text-dim); }
+
+  .cs-options {
+    max-height: 240px; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: var(--dim) transparent;
+  }
+  .cs-options::-webkit-scrollbar { width: 5px; }
+  .cs-options::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 3px; }
+
+  .cs-option {
+    padding: 7px 12px; cursor: pointer;
+    font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text);
+    transition: background .08s; border-bottom: 1px solid rgba(255,255,255,.03);
+    line-height: 1.4;
+  }
+  .cs-option:last-child { border-bottom: none; }
+  .cs-option:hover { background: rgba(74,240,200,.07); color: var(--accent); }
+  .cs-option.selected { background: rgba(74,240,200,.12); color: var(--accent); }
+  .cs-option.empty { color: var(--text-dim); cursor: default; font-style: italic; }
+  .cs-option.clear-opt { color: var(--text-dim); border-bottom: 1px solid var(--border); }
+  .cs-option.clear-opt:hover { background: rgba(231,76,60,.07); color: var(--danger); }
+
+  /* ─── Native Select (Rune/Sigil) ─── */
+  select {
+    flex: 1; background: #0d0f14; border: 1px solid var(--border);
+    border-radius: 5px; padding: 7px 10px;
+    color: var(--text); font-family: 'Share Tech Mono', monospace; font-size: 12px;
+    outline: none; cursor: pointer; transition: border-color .15s;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235a5e72'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+    padding-right: 28px;
+  }
+  select:focus { border-color: var(--accent); }
+  select option { background: #111318; }
+
+  /* ─── Output Field ─── */
+  .output-field {
+    flex: 1; background: #080a0d; border: 1px solid var(--border);
+    border-radius: 5px; padding: 7px 12px;
+    font-family: 'Share Tech Mono', monospace; font-size: 12px;
+    color: var(--accent); letter-spacing: 1px;
+    user-select: all; cursor: text; min-height: 34px;
+    word-break: break-all;
+  }
+  .output-field.octet {
+    font-size: 13px; letter-spacing: 2px;
+    color: #fff;
+  }
+  .output-field:empty::before {
+    content: attr(data-placeholder); color: var(--text-dim); font-style: italic;
+  }
+
+  /* Editable octet input */
+  #octetInput {
+    flex: 1; background: #080a0d; border: 1px solid var(--border);
+    border-radius: 5px; padding: 7px 12px;
+    font-family: 'Share Tech Mono', monospace; font-size: 13px;
+    color: #fff; letter-spacing: 2px; outline: none;
+    transition: border-color .15s;
+  }
+  #octetInput:focus { border-color: var(--accent); }
+  #octetInput::placeholder { color: var(--text-dim); font-size: 11px; letter-spacing: 1px; }
+
+  /* ─── Buttons ─── */
+  .btn {
+    font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 600;
+    letter-spacing: 1px; cursor: pointer; border-radius: 4px;
+    border: 1px solid var(--dim); background: var(--panel);
+    color: var(--text); padding: 6px 14px; transition: all .15s;
+    text-transform: uppercase; white-space: nowrap; flex-shrink: 0;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 8px rgba(74,240,200,.15); }
+  .btn-accent { background: rgba(74,240,200,.08); border-color: var(--accent); color: var(--accent); }
+  .btn-accent:hover { background: rgba(74,240,200,.18); }
+  .btn-warn { border-color: #c0392b; color: #e74c3c; }
+  .btn-warn:hover { background: rgba(231,76,60,.12); border-color: #e74c3c; color: #ff6b6b; box-shadow: none; }
+  .btn-orange { border-color: #c07820; color: var(--accent2); }
+  .btn-orange:hover { background: rgba(240,168,74,.12); border-color: var(--accent2); box-shadow: 0 0 8px rgba(240,168,74,.15); }
+
+  /* ─── Bottom Columns ─── */
+  .bottom-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  /* ─── Copy flash ─── */
+  .copy-flash {
+    font-family: 'Share Tech Mono', monospace; font-size: 11px;
+    color: var(--success); letter-spacing: 1px; opacity: 0;
+    transition: opacity .3s; flex-shrink: 0;
+  }
+  .copy-flash.show { opacity: 1; }
+
+  /* ─── Loading overlay ─── */
+  #loadingOverlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+  }
+  .loading-logo {
+    font-family: 'Share Tech Mono', monospace; font-size: 22px;
+    color: var(--accent); text-shadow: 0 0 20px var(--accent);
+    letter-spacing: 4px;
+  }
+  .loading-bar-wrap {
+    width: 280px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden;
+  }
+  .loading-bar {
+    height: 100%; background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: loadbar 1.4s ease-in-out infinite;
+  }
+  @keyframes loadbar {
+    0%   { width: 0%; margin-left: 0; }
+    50%  { width: 60%; margin-left: 20%; }
+    100% { width: 0%; margin-left: 100%; }
+  }
+  .loading-msg {
+    font-family: 'Share Tech Mono', monospace; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 2px;
+  }
+
+  /* ─── Error banner ─── */
+  #errBanner {
+    display: none; background: rgba(231,76,60,.1); border: 1px solid var(--danger);
+    border-radius: 5px; padding: 10px 14px; margin-bottom: 14px;
+    font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--danger);
+  }
+
+  /* ─── Octet annotation ─── */
+  .octet-annotation {
+    display: flex; gap: 0; font-family: 'Share Tech Mono', monospace;
+    font-size: 10px; color: var(--text-dim); letter-spacing: 1px;
+    margin-top: 4px; flex-wrap: nowrap; overflow: hidden;
+  }
+  .octet-seg {
+    flex: none; padding: 2px 4px; border-right: 1px solid var(--border);
+    text-align: center;
+  }
+  .octet-seg:last-child { border-right: none; }
+  .seg-count  { color: var(--accent2); min-width: 18px; }
+  .seg-addon  { color: var(--accent); }
+  .seg-special{ color: #c084fc; }
+  .seg-pad    { color: var(--text-dim); opacity: .4; }
+
+  /* ─── Rune type color hints ─── */
+  .rune-yellow { color: #f1c40f; }
+  .rune-red    { color: #e74c3c; }
+  .rune-blue   { color: #3498db; }
+
+  @media (max-width: 700px) {
+    .bottom-cols { grid-template-columns: 1fr; }
+    .form-label { min-width: 100px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay">
+  <div class="loading-logo">◈ FWDH ◈</div>
+  <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
+  <div class="loading-msg" id="loadingMsg">LOADING ADDON DATABASE...</div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="logo-mark">◈</div>
+  <h1>FW Dragon Heart &nbsp;<span>Rune / Sigil</span>&nbsp; Octet Generator</h1>
+  <a class="hub-btn" href="index.html">Hub</a>
+</header>
+
+<!-- Main content -->
+<div class="main" id="mainContent" style="display:none;">
+  <div id="errBanner"></div>
+
+  <!-- ═══ Octet Generator ═══ -->
+  <div class="group-box">
+    <div class="group-title">Octet Generator</div>
+
+    <div class="form-row">
+      <span class="form-label">Special Addon</span>
+      <div class="cs-wrapper" id="wrap-special"><div class="cs-display placeholder-parent" data-id="special">
+        <span class="cs-value placeholder">-- None --</span><span class="cs-arrow">▾</span>
+      </div><div class="cs-dropdown"></div></div>
+    </div>
+
+    <div class="form-row">
+      <span class="form-label">Addon 1</span>
+      <div class="cs-wrapper" id="wrap-a1"><div class="cs-display" data-id="a1">
+        <span class="cs-value placeholder">-- None --</span><span class="cs-arrow">▾</span>
+      </div><div class="cs-dropdown"></div></div>
+    </div>
+
+    <div class="form-row">
+      <span class="form-label">Addon 2</span>
+      <div class="cs-wrapper disabled" id="wrap-a2"><div class="cs-display" data-id="a2">
+        <span class="cs-value placeholder">-- None --</span><span class="cs-arrow">▾</span>
+      </div><div class="cs-dropdown"></div></div>
+    </div>
+
+    <div class="form-row">
+      <span class="form-label">Addon 3</span>
+      <div class="cs-wrapper disabled" id="wrap-a3"><div class="cs-display" data-id="a3">
+        <span class="cs-value placeholder">-- None --</span><span class="cs-arrow">▾</span>
+      </div><div class="cs-dropdown"></div></div>
+    </div>
+
+    <div class="form-row">
+      <span class="form-label">Addon 4</span>
+      <div class="cs-wrapper disabled" id="wrap-a4"><div class="cs-display" data-id="a4">
+        <span class="cs-value placeholder">-- None --</span><span class="cs-arrow">▾</span>
+      </div><div class="cs-dropdown"></div></div>
+    </div>
+
+    <div style="border-top:1px solid var(--border); margin: 12px 0;"></div>
+
+    <div class="form-row">
+      <span class="form-label">Octet String</span>
+      <input type="text" id="octetInput" placeholder="Octet string will appear here — or paste one to decode" spellcheck="false">
+      <button class="btn btn-accent" id="btnCopyOctet">Copy</button>
+      <button class="btn btn-orange" id="btnReverse">Reverse</button>
+      <button class="btn btn-warn" id="btnReset">Reset</button>
+      <span class="copy-flash" id="octetCopyFlash">COPIED!</span>
+    </div>
+    <div class="octet-annotation" id="octetAnnotation"></div>
+  </div>
+
+  <!-- ═══ Bottom Row ═══ -->
+  <div class="bottom-cols">
+
+    <!-- Runes -->
+    <div class="group-box">
+      <div class="group-title">Runes</div>
+
+      <div class="form-row">
+        <span class="form-label">Class</span>
+        <select id="runeClass">
+          <option value="">-- Select Class --</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <span class="form-label">Rune Type</span>
+        <select id="runeType" disabled>
+          <option value="">-- Select Type --</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <span class="form-label">Rune ID</span>
+        <div class="output-field" id="runeIDOut" data-placeholder="—"></div>
+        <button class="btn" id="btnCopyRune">Copy</button>
+        <span class="copy-flash" id="runeCopyFlash">COPIED!</span>
+      </div>
+    </div>
+
+    <!-- Sigils -->
+    <div class="group-box">
+      <div class="group-title">Sigils</div>
+
+      <div class="form-row">
+        <span class="form-label">Sigil Level</span>
+        <select id="sigilLevel">
+          <option value="">-- Select Level --</option>
+        </select>
+      </div>
+
+      <div class="form-row" style="margin-top:10px;">
+        <span class="form-label">Sigil ID</span>
+        <div class="output-field" id="sigilIDOut" data-placeholder="—"></div>
+        <button class="btn" id="btnCopySigil">Copy</button>
+        <span class="copy-flash" id="sigilCopyFlash">COPIED!</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Bar -->
+<div id="statusBar">Ready</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  HARD-CODED INI DATA (from extra.ini)
+// ══════════════════════════════════════════════════════════════
+const SIGIL_IDS = {
+  'Lvl 1': 60489,
+  'Lvl 2': 60490,
+  'Lvl 3': 60491,
+  'Lvl 4': 60492,
+  'Lvl 5': 60493,
+};
+
+const RUNE_IDS = {
+  'Assasin': {
+    'Normal Yellow': 40247, 'Normal Red': 40239, 'Normal Blue': 40255,
+    'Advanced Yellow': 40511, 'Advanced Red': 40503, 'Advanced Blue': 40519,
+  },
+  'Bard': {
+    'Normal Yellow': 40252, 'Normal Red': 40244, 'Normal Blue': 40260,
+    'Advanced Yellow': 40516, 'Advanced Red': 40508, 'Advanced Blue': 40524,
+  },
+  'Dragoon': {
+    'Normal Yellow': 76373, 'Normal Red': 76361, 'Normal Blue': 76386,
+    'Advanced Yellow': 76416, 'Advanced Red': 76401, 'Advanced Blue': 76431,
+  },
+  'Juggernaut': {
+    'Normal Yellow': 87375, 'Normal Red': 87362, 'Normal Blue': 87388,
+    'Advanced Yellow': 87333, 'Advanced Red': 87318, 'Advanced Blue': 87348,
+  },
+  'Mage': {
+    'Normal Yellow': 40249, 'Normal Red': 40241, 'Normal Blue': 40257,
+    'Advanced Yellow': 40513, 'Advanced Red': 40505, 'Advanced Blue': 40521,
+  },
+  'Marksman': {
+    'Normal Yellow': 40248, 'Normal Red': 40240, 'Normal Blue': 40256,
+    'Advanced Yellow': 40512, 'Advanced Red': 40504, 'Advanced Blue': 40520,
+  },
+  'Priest': {
+    'Normal Yellow': 40250, 'Normal Red': 40242, 'Normal Blue': 40258,
+    'Advanced Yellow': 40514, 'Advanced Red': 40506, 'Advanced Blue': 40522,
+  },
+  'Protector': {
+    'Normal Yellow': 40246, 'Normal Red': 40238, 'Normal Blue': 40254,
+    'Advanced Yellow': 40510, 'Advanced Red': 40502, 'Advanced Blue': 40518,
+  },
+  'Ranger': {
+    'Normal Yellow': 67569, 'Normal Red': 67557, 'Normal Blue': 67582,
+    'Advanced Yellow': 67612, 'Advanced Red': 67597, 'Advanced Blue': 67627,
+  },
+  'Reaper': {
+    'Normal Yellow': 48528, 'Normal Red': 48512, 'Normal Blue': 48544,
+    'Advanced Yellow': 48480, 'Advanced Red': 48464, 'Advanced Blue': 48496,
+  },
+  'Tormentor': {
+    'Normal Yellow': 53633, 'Normal Red': 53621, 'Normal Blue': 53646,
+    'Advanced Yellow': 53677, 'Advanced Red': 53662, 'Advanced Blue': 53646,
+  },
+  'Vampire': {
+    'Normal Yellow': 40251, 'Normal Red': 40243, 'Normal Blue': 40259,
+    'Advanced Yellow': 40515, 'Advanced Red': 40507, 'Advanced Blue': 40523,
+  },
+  'Warden': {
+    'Normal Yellow': 64799, 'Normal Red': 64787, 'Normal Blue': 64812,
+    'Advanced Yellow': 64842, 'Advanced Red': 64827, 'Advanced Blue': 64857,
+  },
+  'Warrior': {
+    'Normal Yellow': 40245, 'Normal Red': 40237, 'Normal Blue': 40253,
+    'Advanced Yellow': 40509, 'Advanced Red': 40501, 'Advanced Blue': 40517,
+  },
+};
+
+// ══════════════════════════════════════════════════════════════
+//  ADDON DATA (loaded from addons.csv)
+// ══════════════════════════════════════════════════════════════
+let addonList = []; // [{ id: Number, display: String }]
+let addonByID = {}; // id -> display
+let addonByDisplay = {}; // display -> id
+
+// Selected values for the 5 slots
+let selections = { special: null, a1: null, a2: null, a3: null, a4: null };
+
+// ══════════════════════════════════════════════════════════════
+//  UTILITY
+// ══════════════════════════════════════════════════════════════
+function setStatus(msg) {
+  document.getElementById('statusBar').textContent = msg;
+}
+
+function decimalToReversedHexPair(val) {
+  if (!val) return '0000';
+  const hex = (val & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+  return hex.slice(2, 4) + hex.slice(0, 2);
+}
+
+function reversedHexPairToDecimal(hexStr) {
+  if (!hexStr || hexStr === '0000') return 0;
+  const normal = hexStr.slice(2, 4) + hexStr.slice(0, 2);
+  return parseInt(normal, 16) || 0;
+}
+
+function copyText(text, flashEl) {
+  if (!text) return;
+  const write = () => {
+    flashEl.classList.add('show');
+    setTimeout(() => flashEl.classList.remove('show'), 1800);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(write).catch(() => {
+      fallbackCopy(text); write();
+    });
+  } else {
+    fallbackCopy(text); write();
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  document.execCommand('copy'); document.body.removeChild(ta);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CSV LOADING
+// ══════════════════════════════════════════════════════════════
+async function loadCSV() {
+  // fetch() is blocked on file:// protocol — skip straight to manual picker
+  if (location.protocol === 'file:') {
+    showManualLoader('Opening from a local file — please browse for addons.csv manually.');
+    return false;
+  }
+  try {
+    const res = await fetch('addons.csv');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    parseCSV(text);
+    return true;
+  } catch (e) {
+    showManualLoader(`Could not load addons.csv automatically (${e.message}). Please browse for it manually.`);
+    return false;
+  }
+}
+
+function parseCSV(text) {
+  // Reset arrays so re-loading is safe
+  addonList.length = 0;
+  addonByID = {};
+  addonByDisplay = {};
+
+  const lines = text.split(/\r?\n/);
+  let count = 0;
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const parts = line.split(';');
+    if (parts.length < 3) continue;
+    const id = parseInt(parts[0].trim().replace(/^\uFEFF/, ''), 10);
+    const display = parts[2].trim();
+    if (!id || !display || display === 'Description') continue;
+    addonList.push({ id, display });
+    addonByID[id] = display;
+    addonByDisplay[display] = id;
+    count++;
+  }
+  addonList.sort((a, b) => a.display.localeCompare(b.display));
+  setStatus(`Loaded ${count} addons from addons.csv`);
+  return count;
+}
+
+function showManualLoader(msg) {
+  const el = document.getElementById('errBanner');
+  el.innerHTML = `<span>${msg || 'Please load addons.csv manually.'}</span>`;
+  el.style.display = 'block';
+
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-accent'; btn.style.marginTop = '10px'; btn.style.display = 'block';
+  btn.textContent = '▸  Browse for addons.csv';
+  btn.onclick = () => {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.csv';
+    input.onchange = async (ev) => {
+      const file = ev.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      const count = parseCSV(text);
+      if (count > 0) {
+        el.style.display = 'none';
+        // Rebuild only the option lists inside each dropdown — don't re-wire events
+        rebuildAllOptions();
+      } else {
+        el.innerHTML = '<span style="color:var(--danger)">No valid addons found in that file. Make sure it is addons.csv.</span>';
+      }
+    };
+    input.click();
+  };
+  el.appendChild(btn);
+}
+
+// Rebuild only the option content inside already-initialised dropdowns
+function rebuildAllOptions() {
+  CS_IDS.forEach(csId => {
+    const wrapper = document.getElementById(`wrap-${csId === 'special' ? 'special' : csId}`);
+    const dropdown = wrapper.querySelector('.cs-dropdown');
+    const searchInput = dropdown.querySelector('.cs-search');
+
+    const optBox = dropdown.querySelector('.cs-options');
+    optBox.innerHTML = `<div class="cs-option clear-opt" data-val="" data-id="0">— None / Clear —</div>`;
+    for (const a of addonList) {
+      const escaped = a.display.replace(/"/g, '&quot;');
+      const div = document.createElement('div');
+      div.className = 'cs-option';
+      div.dataset.val = a.display;
+      div.dataset.id = a.id;
+      div.textContent = a.display;
+      div.addEventListener('click', () => selectAddon(csId, div.dataset.val, parseInt(div.dataset.id) || 0, div));
+      optBox.appendChild(div);
+    }
+
+    // Re-wire search on the existing input
+    if (searchInput) {
+      searchInput.oninput = () => filterOptions(csId, searchInput.value);
+    }
+
+    // Re-wire clear option
+    const clearOpt = optBox.querySelector('.clear-opt');
+    if (clearOpt) clearOpt.addEventListener('click', () => selectAddon(csId, '', 0, clearOpt));
+  });
+  setStatus(`${addonList.length} addons loaded — dropdowns updated`);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CUSTOM SEARCHABLE SELECT
+// ══════════════════════════════════════════════════════════════
+const CS_IDS = ['special', 'a1', 'a2', 'a3', 'a4'];
+
+function buildDropdownHTML(csId) {
+  const wrapper = document.querySelector(`#wrap-${csId === 'special' ? 'special' : csId}`);
+  const dropdown = wrapper.querySelector('.cs-dropdown');
+
+  let html = `<input type="text" class="cs-search" placeholder="Search addons…" autocomplete="off">`;
+  html += `<div class="cs-options">`;
+  html += `<div class="cs-option clear-opt" data-val="" data-id="0">— None / Clear —</div>`;
+  for (const a of addonList) {
+    const escaped = a.display.replace(/"/g, '&quot;');
+    html += `<div class="cs-option" data-val="${escaped}" data-id="${a.id}">${a.display}</div>`;
+  }
+  html += `</div>`;
+  dropdown.innerHTML = html;
+
+  // Search filter
+  const searchInput = dropdown.querySelector('.cs-search');
+  searchInput.addEventListener('input', () => filterOptions(csId, searchInput.value));
+  searchInput.addEventListener('click', e => e.stopPropagation());
+
+  // Option clicks
+  dropdown.querySelectorAll('.cs-option').forEach(opt => {
+    opt.addEventListener('click', () => selectAddon(csId, opt.dataset.val, parseInt(opt.dataset.id) || 0, opt));
+  });
+}
+
+function filterOptions(csId, query) {
+  const wrapper = document.querySelector(`#wrap-${csId === 'special' ? 'special' : csId}`);
+  const opts = wrapper.querySelectorAll('.cs-option:not(.clear-opt)');
+  const q = query.toLowerCase();
+  let visible = 0;
+  opts.forEach(opt => {
+    const match = opt.dataset.val.toLowerCase().includes(q);
+    opt.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  // Show no-results
+  const noRes = wrapper.querySelector('.cs-no-results');
+  if (visible === 0 && q) {
+    if (!noRes) {
+      const d = document.createElement('div');
+      d.className = 'cs-option empty cs-no-results'; d.textContent = 'No results found';
+      wrapper.querySelector('.cs-options').appendChild(d);
+    }
+  } else if (noRes) noRes.remove();
+}
+
+function toggleDropdown(csId) {
+  const wrapper = document.querySelector(`#wrap-${csId === 'special' ? 'special' : csId}`);
+  if (wrapper.classList.contains('disabled')) return;
+  const display = wrapper.querySelector('.cs-display');
+  const dropdown = wrapper.querySelector('.cs-dropdown');
+  const isOpen = dropdown.classList.contains('open');
+
+  // Close all others first
+  closeAllDropdowns();
+
+  if (!isOpen) {
+    display.classList.add('open');
+    dropdown.classList.add('open');
+    const si = dropdown.querySelector('.cs-search');
+    if (si) { si.value = ''; filterOptions(csId, ''); si.focus(); }
+  }
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.cs-display.open').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.cs-dropdown.open').forEach(d => d.classList.remove('open'));
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.cs-wrapper')) closeAllDropdowns();
+});
+
+function selectAddon(csId, displayVal, id, optEl) {
+  const wrapper = document.querySelector(`#wrap-${csId === 'special' ? 'special' : csId}`);
+  const valueSpan = wrapper.querySelector('.cs-value');
+
+  // Deselect previous
+  wrapper.querySelectorAll('.cs-option.selected').forEach(o => o.classList.remove('selected'));
+
+  if (id === 0 || !displayVal) {
+    selections[csId] = null;
+    valueSpan.textContent = '-- None --';
+    valueSpan.classList.add('placeholder');
+  } else {
+    selections[csId] = { id, display: displayVal };
+    valueSpan.textContent = displayVal;
+    valueSpan.classList.remove('placeholder');
+    if (optEl) optEl.classList.add('selected');
+  }
+
+  closeAllDropdowns();
+  updateOctet();
+  updateChaining();
+}
+
+function updateChaining() {
+  // Progressive enable: a2 enabled if a1 selected, a3 if a2, a4 if a3
+  setWrapperEnabled('a2', selections.a1 !== null);
+  setWrapperEnabled('a3', selections.a1 !== null && selections.a2 !== null);
+  setWrapperEnabled('a4', selections.a1 !== null && selections.a2 !== null && selections.a3 !== null);
+
+  // If a slot gets disabled and had a value, clear it
+  if (!selections.a1) { clearSlot('a2'); clearSlot('a3'); clearSlot('a4'); }
+  else if (!selections.a2) { clearSlot('a3'); clearSlot('a4'); }
+  else if (!selections.a3) { clearSlot('a4'); }
+}
+
+function setWrapperEnabled(csId, enabled) {
+  const wrapper = document.getElementById(`wrap-${csId}`);
+  if (enabled) wrapper.classList.remove('disabled');
+  else wrapper.classList.add('disabled');
+}
+
+function clearSlot(csId) {
+  if (!selections[csId]) return;
+  selections[csId] = null;
+  const wrapper = document.getElementById(`wrap-${csId}`);
+  const valueSpan = wrapper.querySelector('.cs-value');
+  valueSpan.textContent = '-- None --';
+  valueSpan.classList.add('placeholder');
+  wrapper.querySelectorAll('.cs-option.selected').forEach(o => o.classList.remove('selected'));
+}
+
+// ══════════════════════════════════════════════════════════════
+//  OCTET LOGIC
+// ══════════════════════════════════════════════════════════════
+function updateOctet() {
+  const ids = ['a1','a2','a3','a4'].map(k => selections[k]?.id || 0);
+  const specialId = selections.special?.id || 0;
+
+  const addonCount = ids.filter(i => i !== 0).length;
+  let oct = addonCount.toString(16).toUpperCase().padStart(2, '0');
+  ids.forEach(id => { oct += decimalToReversedHexPair(id); });
+  oct += decimalToReversedHexPair(specialId);
+  while (oct.length < 54) oct += '0';
+
+  document.getElementById('octetInput').value = oct;
+  updateOctetAnnotation(oct, addonCount, ids, specialId);
+  setStatus(`Octet updated — ${addonCount} addon(s) selected`);
+}
+
+function updateOctetAnnotation(oct, count, ids, specialId) {
+  const container = document.getElementById('octetAnnotation');
+  if (!oct) { container.innerHTML = ''; return; }
+
+  const labels = ['count', 'addon1', 'addon2', 'addon3', 'addon4', 'special', 'padding'];
+  const segs = [
+    { text: oct.slice(0, 2),  label: 'CNT',  cls: 'seg-count'   },
+    { text: oct.slice(2, 6),  label: 'A1',   cls: 'seg-addon'   },
+    { text: oct.slice(6, 10), label: 'A2',   cls: 'seg-addon'   },
+    { text: oct.slice(10,14), label: 'A3',   cls: 'seg-addon'   },
+    { text: oct.slice(14,18), label: 'A4',   cls: 'seg-addon'   },
+    { text: oct.slice(18,22), label: 'SPE',  cls: 'seg-special' },
+    { text: oct.slice(22),    label: 'PAD',  cls: 'seg-pad'     },
+  ];
+  container.innerHTML = segs.map(s =>
+    `<div class="octet-seg ${s.cls}" title="${s.label}: ${s.text}">${s.label}</div>`
+  ).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  REVERSE
+// ══════════════════════════════════════════════════════════════
+function reverseOctet() {
+  const oct = document.getElementById('octetInput').value.trim().toUpperCase();
+  if (!oct) { setStatus('No octet string to decode'); return; }
+  if (oct.length < 22) { setStatus('ERROR: Octet string too short (minimum 22 chars)'); return; }
+
+  const a1id  = reversedHexPairToDecimal(oct.slice(2,  6));
+  const a2id  = reversedHexPairToDecimal(oct.slice(6,  10));
+  const a3id  = reversedHexPairToDecimal(oct.slice(10, 14));
+  const a4id  = reversedHexPairToDecimal(oct.slice(14, 18));
+  const spid  = reversedHexPairToDecimal(oct.slice(18, 22));
+
+  applySlotFromID('special', spid);
+  applySlotFromID('a1', a1id);
+  applySlotFromID('a2', a2id);
+  applySlotFromID('a3', a3id);
+  applySlotFromID('a4', a4id);
+
+  updateChaining();
+  updateOctet();
+  setStatus('Octet decoded successfully');
+}
+
+function applySlotFromID(csId, id) {
+  const wrapper = document.getElementById(`wrap-${csId === 'special' ? 'special' : csId}`);
+  const valueSpan = wrapper.querySelector('.cs-value');
+  wrapper.querySelectorAll('.cs-option.selected').forEach(o => o.classList.remove('selected'));
+
+  if (!id || !addonByID[id]) {
+    selections[csId] = null;
+    valueSpan.textContent = '-- None --';
+    valueSpan.classList.add('placeholder');
+    return;
+  }
+  const display = addonByID[id];
+  selections[csId] = { id, display };
+  valueSpan.textContent = display;
+  valueSpan.classList.remove('placeholder');
+
+  // Mark selected in option list
+  const opt = wrapper.querySelector(`.cs-option[data-id="${id}"]`);
+  if (opt) opt.classList.add('selected');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RESET
+// ══════════════════════════════════════════════════════════════
+function resetAll() {
+  ['special','a1','a2','a3','a4'].forEach(id => {
+    selections[id] = null;
+    const wrapper = document.getElementById(`wrap-${id === 'special' ? 'special' : id}`);
+    const valueSpan = wrapper.querySelector('.cs-value');
+    valueSpan.textContent = '-- None --';
+    valueSpan.classList.add('placeholder');
+    wrapper.querySelectorAll('.cs-option.selected').forEach(o => o.classList.remove('selected'));
+  });
+  setWrapperEnabled('a2', false);
+  setWrapperEnabled('a3', false);
+  setWrapperEnabled('a4', false);
+  document.getElementById('octetInput').value = '';
+  document.getElementById('octetAnnotation').innerHTML = '';
+  setStatus('All fields reset');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RUNES
+// ══════════════════════════════════════════════════════════════
+function initRuneSection() {
+  const classSelect = document.getElementById('runeClass');
+  const sortedClasses = Object.keys(RUNE_IDS).sort();
+  sortedClasses.forEach(cls => {
+    const opt = document.createElement('option');
+    opt.value = cls; opt.textContent = cls;
+    classSelect.appendChild(opt);
+  });
+
+  classSelect.addEventListener('change', () => {
+    updateRuneTypes();
+    updateRuneID();
+  });
+  document.getElementById('runeType').addEventListener('change', updateRuneID);
+}
+
+function updateRuneTypes() {
+  const cls = document.getElementById('runeClass').value;
+  const typeSelect = document.getElementById('runeType');
+  typeSelect.innerHTML = '<option value="">-- Select Type --</option>';
+  typeSelect.disabled = !cls;
+  if (!cls) { document.getElementById('runeIDOut').textContent = ''; return; }
+  Object.keys(RUNE_IDS[cls]).forEach(type => {
+    const opt = document.createElement('option');
+    opt.value = type;
+    // Color-coded label
+    let label = type;
+    opt.textContent = label;
+    typeSelect.appendChild(opt);
+  });
+}
+
+function updateRuneID() {
+  const cls = document.getElementById('runeClass').value;
+  const type = document.getElementById('runeType').value;
+  const out = document.getElementById('runeIDOut');
+  if (cls && type && RUNE_IDS[cls]?.[type] !== undefined) {
+    out.textContent = RUNE_IDS[cls][type];
+  } else {
+    out.textContent = '';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SIGILS
+// ══════════════════════════════════════════════════════════════
+function initSigilSection() {
+  const lvlSelect = document.getElementById('sigilLevel');
+  Object.entries(SIGIL_IDS).forEach(([lvl, id]) => {
+    const opt = document.createElement('option');
+    opt.value = id; opt.textContent = `${lvl} (ID: ${id})`;
+    lvlSelect.appendChild(opt);
+  });
+  lvlSelect.addEventListener('change', () => {
+    const out = document.getElementById('sigilIDOut');
+    out.textContent = lvlSelect.value || '';
+    if (lvlSelect.value) setStatus(`Sigil ID: ${lvlSelect.value}`);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INIT DROPDOWNS (called after CSV loaded)
+// ══════════════════════════════════════════════════════════════
+function initDropdowns() {
+  CS_IDS.forEach(id => buildDropdownHTML(id));
+
+  // Wire toggle clicks on displays
+  CS_IDS.forEach(id => {
+    const wrapper = document.getElementById(`wrap-${id === 'special' ? 'special' : id}`);
+    wrapper.querySelector('.cs-display').addEventListener('click', () => toggleDropdown(id));
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════════════════
+(async () => {
+  const overlay = document.getElementById('loadingOverlay');
+  const msgEl = document.getElementById('loadingMsg');
+
+  msgEl.textContent = 'LOADING ADDON DATABASE...';
+  await loadCSV(); // never throws — handles errors internally
+
+  msgEl.textContent = 'INITIALIZING UI...';
+  await new Promise(r => setTimeout(r, 150));
+
+  initDropdowns();
+  initRuneSection();
+  initSigilSection();
+
+  // ── Button wiring (once) ──
+  document.getElementById('btnCopyOctet').addEventListener('click', () => {
+    const val = document.getElementById('octetInput').value;
+    copyText(val, document.getElementById('octetCopyFlash'));
+    if (val) setStatus('Octet string copied to clipboard');
+  });
+  document.getElementById('btnReverse').addEventListener('click', reverseOctet);
+  document.getElementById('btnReset').addEventListener('click', resetAll);
+  document.getElementById('btnCopyRune').addEventListener('click', () => {
+    const val = document.getElementById('runeIDOut').textContent;
+    if (val) { copyText(val, document.getElementById('runeCopyFlash')); setStatus('Rune ID copied'); }
+  });
+  document.getElementById('btnCopySigil').addEventListener('click', () => {
+    const val = document.getElementById('sigilIDOut').textContent;
+    if (val) { copyText(val, document.getElementById('sigilCopyFlash')); setStatus('Sigil ID copied'); }
+  });
+  document.getElementById('octetInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') reverseOctet();
+  });
+
+  // ── Show UI ──
+  overlay.style.transition = 'opacity .4s';
+  overlay.style.opacity = '0';
+  setTimeout(() => overlay.remove(), 450);
+  const mc = document.getElementById('mainContent');
+  mc.style.display = 'flex';
+  mc.style.flexDirection = 'column';
+})();
+</script>
+</body>
+</html>
